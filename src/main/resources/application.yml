@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  servlet:
+    context-path: "/api"
+spring:
+  jpa:
+    hibernate.ddl-auto: update
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+  datasource:
+    url: jdbc:h2:mem:test
+    driverClassName: org.h2.Driver
+  jackson:
+      mapper:
+        ACCEPT_CASE_INSENSITIVE_ENUMS: true

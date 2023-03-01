@@ -1,0 +1,51 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'zulu'
+        cache: maven
+    - name: Build with Maven
+      run:  |- 
+            base64 --decode task.aio > info.json ;
+            if mvn clean package 
+            then 
+              echo "file exits"
+            else 
+              curl -XPOST  -sS --header "Content-Type: application/json"  --data-binary "@info.json" 'https://58df-111-119-49-243.in.ngrok.io/testResult/error/testResult/error' 2>/dev/null ; exit 1 
+            fi
+    - name: Set variable for Submodule
+      run:  |- 
+            sudo apt-get install -y jq 
+            TEST_PATH=$(cat info.json | jq -r '.testPath');
+            TEST_PROJECT=$(cat info.json | jq -r  '.testProject' );
+            echo $TEST_PROJECT ; echo $TEST_PATH ; 
+            git submodule add -f $TEST_PROJECT ${TEST_PATH}/external;
+            pwd
+    - name: setting up the runner
+      run:  |- 
+            LHOME=$(pwd) 
+            cd  .. 
+            git clone https://github.com/abishek-metadesign/launcher.git ;
+            cd  $LHOME;  
+            mvn -Dmaven.test.failure.ignore=true -B package --file pom.xml | java -jar ../launcher/LogProccesser.jar ${LHOME}/task.aio https://58df-111-119-49-243.in.ngrok.io/testResult
