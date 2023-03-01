@@ -46,7 +46,7 @@ public class EventController {
    @PutMapping("/schedule/{id}")
    public  ResponseEntity<EventResponse> update(@RequestBody @Valid EventRequest eventRequest, @PathVariable("id") Long id  ){
        Event event = entityMapper.map(eventRequest, Event.class);
-       event.setId(id);
+       event.setId( id);
        Event updatedEvent = eventService.update(event);
        EventResponse eventResponse  = entityMapper.map(updatedEvent, EventResponse.class);
        return ResponseEntity.ok(eventResponse);
